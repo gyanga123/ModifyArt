@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModifyArt - AI 写作助手</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1 class="title">ModifyArt</h1>
+        <span class="subtitle">AI 写作助手</span>
+        <span id="ctx-status" class="ctx-indicator">无上下文</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="control-row">
+            <select id="operation">
+                <option value="polish">润色改写</option>
+                <option value="remove_filler">去除水句</option>
+                <option value="format">智能分段</option>
+                <option value="pipeline">逐章改写</option>
+                <option value="dedup_plot">情节去重分析</option>
+                <option value="logic_check">逻辑一致性校验</option>
+            </select>
+            <button id="btn-execute" class="btn-primary">执行</button>
+            <button id="btn-cancel" class="btn-secondary" style="display:none">取消</button>
+        </div>
+        <textarea id="extra-instruction" class="extra-input" placeholder="附加指令（可选）：例如"语气更幽默"、"缩短到500字"；对结果不满意时，可在此输入具体修改意见点修正..." rows="2"></textarea>
+    </div>
+
+    <!-- Status -->
+    <div id="status-bar" class="status-bar"></div>
+
+    <!-- Diff View -->
+    <div class="diff-container">
+        <div class="diff-pane">
+            <div class="diff-header">原文</div>
+            <div id="original-pane" class="diff-content"></div>
+        </div>
+        <div class="diff-pane">
+            <div class="diff-header">修改后（可直接编辑）</div>
+            <textarea id="modified-pane" class="diff-content edit-area" placeholder="AI 修改后的文本将显示在这里，你可以直接编辑..."></textarea>
+        </div>
+    </div>
+
+    <!-- Context update panel -->
+    <div id="ctx-panel" style="display:none" class="ctx-panel">
+        <div id="ctx-title" class="ctx-title">更新故事上下文（AI 自动提取，可编辑）</div>
+        <div class="ctx-label">人物修改建议（写入对应人物的「近期变动」）</div>
+        <textarea id="ctx-char-updates" placeholder="苏曼尼: 崩溃缺乏层次...&#10;苏晚: 对话过于理性..." class="ctx-input ctx-textarea" rows="3"></textarea>
+        <div class="ctx-label">章节问题（写入「章节问题」）</div>
+        <textarea id="ctx-problems" placeholder="[逻辑问题] 感应灯刚亮不可能在拷贝文件..." class="ctx-input ctx-textarea" rows="3"></textarea>
+        <input id="ctx-change" placeholder="本次修改摘要" class="ctx-input">
+        <button id="btn-save-ctx" class="btn-primary btn-sm">保存上下文</button>
+    </div>
+
+    <!-- Actions -->
+    <div class="footer">
+        <button id="btn-apply" class="btn-primary" disabled>✓ 应用到编辑器</button>
+        <button id="btn-refine" class="btn-primary" style="display:none">根据反馈修正</button>
+        <button id="btn-retry" class="btn-secondary" style="display:none">重试</button>
+        <span id="result-info" class="result-info"></span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "name": "modifyart",
+  "displayName": "ModifyArt - AI 写作助手",
+  "description": "AI 驱动的文章/剧本深度改写工具",
+  "version": "0.1.0",
+  "publisher": "modifyart",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "modifyart.open",
+        "title": "ModifyArt: 打开写作助手"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "modifyart.open",
+          "group": "modification"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "modifyart.open",
+          "group": "modification"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}

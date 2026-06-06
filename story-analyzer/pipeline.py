@@ -95,18 +95,22 @@ def build_phase1_prompt(
         chapters_text += f"\n### {ch.header}\n\n{ch.content}\n"
         chapters_text += "---\n"
 
+    novel_name = config.BOOK_NAME or "逆世天途"
     return prompt_template.replace("{existing_story_summary}", existing_summary or "（暂无）")\
                           .replace("{existing_character_profiles}", existing_profiles or "（暂无）")\
                           .replace("{existing_writing_technique}", existing_technique or "（暂无）")\
+                          .replace("{novel_name}", novel_name)\
                           .replace("{chapters}", chapters_text.strip())
 
 
 def build_phase2_prompt(template_name: str, summary: str, profiles: str, technique: str = "") -> str:
     """构建 Phase 2 分析提示词"""
+    novel_name = config.BOOK_NAME or "逆世天途"
     template = read_file(config.PROMPTS_DIR / template_name)
     return template.replace("{story_summary}", summary)\
                    .replace("{character_profiles}", profiles)\
-                   .replace("{writing_technique}", technique or "（暂无）")
+                   .replace("{writing_technique}", technique or "（暂无）")\
+                   .replace("{novel_name}", novel_name)
 
 
 # ─── 响应解析 ───────────────────────────────────────────────
@@ -302,8 +306,14 @@ def main():
                         help="从上次进度处继续 Phase 1")
     parser.add_argument("--from-chapter", type=int, default=0,
                         help="从指定章节后开始处理")
+    parser.add_argument("--book", default=None,
+                        help="书名，切换到对应工作区")
+    parser.add_argument("--novel-path", default=None,
+                        help="原文 txt 路径（不指定则按约定查找）")
 
     args = parser.parse_args()
+    if args.book:
+        config.set_book(args.book, args.novel_path)
     config.ensure_dirs()
 
     if args.phase in ("1", "all"):

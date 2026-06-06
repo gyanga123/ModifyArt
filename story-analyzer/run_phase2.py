@@ -24,30 +24,40 @@ FORCE = False
 
 # ─── 路径 ───
 SCRIPT_DIR = Path(__file__).parent
-OUTPUT_DIR = SCRIPT_DIR / "output"
-CN_OUTPUT_DIR = SCRIPT_DIR / "输出"
-PROMPTS_DIR = SCRIPT_DIR / "prompts"
-NOVEL_PATH = Path("d:/project file/ModifyArt/【改】逆世天途_utf8.txt")
+sys.path.insert(0, str(SCRIPT_DIR))
+import config as app_config  # 避免与脚本内的 config 冲突
 
-# 输出文件名（中文，统一后缀 _逆世天途）
-ANALYSES = {
-    "logic": {
-        "output_file": CN_OUTPUT_DIR / "逻辑一致性分析_逆世天途.md",
-        "raw_cache": OUTPUT_DIR / "raw_logic.json",
-        "prompt_file": PROMPTS_DIR / "phase2_logic.txt",
-        "title": "《逆世天途》逻辑一致性分析报告",
-    },
-    "repetition": {
-        "output_file": CN_OUTPUT_DIR / "重复模式分析_逆世天途.md",
-        "raw_cache": OUTPUT_DIR / "raw_repetition.json",
-        "prompt_file": PROMPTS_DIR / "phase2_repetition.txt",
-        "title": "《逆世天途》重复模式分析报告",
-    },
-}
+OUTPUT_DIR = app_config.OUTPUT_DIR
+CN_OUTPUT_DIR = app_config.CN_OUTPUT_DIR
+PROMPTS_DIR = app_config.PROMPTS_DIR
+BOOK_NAME = app_config.BOOK_NAME
 
 OPENSSQUILLA = "opensquilla"
 MODEL = "deepseek-v4-pro"
 TIMEOUT_SEC = 360
+
+
+def get_cfg(analysis: str) -> dict:
+    """获取当前书的分析配置"""
+    suffix = f"_{app_config.BOOK_NAME}" if app_config.BOOK_NAME else ""
+    name = app_config.BOOK_NAME or "逆世天途"
+    CN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    configs = {
+        "logic": {
+            "output_file": CN_OUTPUT_DIR / f"逻辑一致性分析{suffix}.md",
+            "raw_cache": OUTPUT_DIR / "raw_logic.json",
+            "prompt_file": PROMPTS_DIR / "phase2_logic.txt",
+            "title": f"《{name}》逻辑一致性分析报告",
+        },
+        "repetition": {
+            "output_file": CN_OUTPUT_DIR / f"重复模式分析{suffix}.md",
+            "raw_cache": OUTPUT_DIR / "raw_repetition.json",
+            "prompt_file": PROMPTS_DIR / "phase2_repetition.txt",
+            "title": f"《{name}》重复模式分析报告",
+        },
+    }
+    return configs[analysis]
 
 
 # ══════════════════════════════════════════
@@ -89,7 +99,7 @@ def check_prerequisites() -> bool:
 
 def has_cache(analysis: str) -> bool:
     """检查是否有可用缓存"""
-    cfg = ANALYSES[analysis]
+    cfg = get_cfg(analysis)
     raw_exists = cfg["raw_cache"].exists()
     final_exists = cfg["output_file"].exists()
     if raw_exists and final_exists and final_exists.stat().st_size > 100:
@@ -103,7 +113,7 @@ def has_cache(analysis: str) -> bool:
 
 def extract_from_cache(analysis: str) -> bool:
     """从缓存的原始 JSON 重新提取 .md 输出"""
-    cfg = ANALYSES[analysis]
+    cfg = get_cfg(analysis)
     raw_path = cfg["raw_cache"]
     if not raw_path.exists():
         return False
@@ -139,7 +149,7 @@ def extract_from_cache(analysis: str) -> bool:
 
 def write_md(analysis: str, text: str, result: dict):
     """将分析结果写入最终 .md 文件（中文路径）"""
-    cfg = ANALYSES[analysis]
+    cfg = get_cfg(analysis)
     usage = result.get("usage", {})
     routing = result.get("routing", {})
 
@@ -181,7 +191,7 @@ def report_cost(result: dict):
 
 def run_analysis(analysis: str, force: bool = False) -> bool:
     """执行一次 Phase 2 分析"""
-    cfg = ANALYSES[analysis]
+    cfg = get_cfg(analysis)
 
     # 缓存检查
     if not force and has_cache(analysis):
@@ -289,7 +299,7 @@ SESSION_ID = "novel-phase2"
 def session_start(force_run: bool = False) -> bool:
     """启动新会话，第一轮分析（逻辑一致性）"""
     log(f"[会话] 启动新会话: {SESSION_ID}")
-    cfg = ANALYSES["logic"]
+    cfg = get_cfg("logic")
 
     if cfg["output_file"].exists() and not force_run:
         log("[缓存] 逻辑分析结果已存在，跳过会话启动")
@@ -323,7 +333,7 @@ def session_start(force_run: bool = False) -> bool:
 
 def session_continue(analysis_type: str) -> bool:
     """在同一会话中继续第二轮分析（重复模式）"""
-    cfg = ANALYSES[analysis_type]
+    cfg = get_cfg(analysis_type)
 
     prompt_text = read_file(cfg["prompt_file"])
     message = f"""接下来，请在同一份材料的基础上进行另一项分析。
@@ -355,7 +365,7 @@ def _session_round(cmd: list, analysis: str) -> bool:
         return False
 
     raw_bytes = proc.stdout
-    cfg = ANALYSES[analysis]
+    cfg = get_cfg(analysis)
 
     # 缓存原始 JSON
     with open(cfg["raw_cache"], "wb") as f:
@@ -393,7 +403,7 @@ def _session_round(cmd: list, analysis: str) -> bool:
 
 def print_usage():
     print("""用法:
-  python run_phase2.py <command> [--force]
+  python run_phase2.py <command> [--force] [--book 书名]
 
 命令:
   logic         逻辑一致性分析
@@ -403,6 +413,7 @@ def print_usage():
   extract       从已有缓存重新提取 .md
 
 选项:
+  --book 书名    切换到指定书的工作区（默认：逆世天途）
   --force       忽略缓存，强制重跑
   --help        显示本帮助
 """)
@@ -415,12 +426,31 @@ def main():
         print_usage()
         return
 
-    command = args[0]
-    FORCE = "--force" in args
+    # 提取 --book 参数（可能出现在任何位置）
+    book = ""
+    clean_args = []
+    skip_next = False
+    for i, a in enumerate(args):
+        if skip_next:
+            skip_next = False
+            continue
+        if a == "--book" and i + 1 < len(args):
+            book = args[i + 1]
+            skip_next = True
+        elif a.startswith("--book="):
+            book = a.split("=", 1)[1]
+        else:
+            clean_args.append(a)
+
+    if book:
+        app_config.set_book(book)
+
+    command = clean_args[0]
+    FORCE = "--force" in clean_args
 
     if command == "extract":
         for analysis in ["logic", "repetition"]:
-            if ANALYSES[analysis]["raw_cache"].exists():
+            if get_cfg(analysis)["raw_cache"].exists():
                 extract_from_cache(analysis)
             else:
                 log(f"[跳过] {analysis} 无缓存")
@@ -442,7 +472,7 @@ def main():
             run_analysis("repetition", FORCE)
         return
 
-    if command in ANALYSES:
+    if command in ("logic", "repetition"):
         if not check_prerequisites():
             sys.exit(1)
         success = run_analysis(command, FORCE)
