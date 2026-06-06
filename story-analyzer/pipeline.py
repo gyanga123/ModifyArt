@@ -171,7 +171,7 @@ def split_phase1_response(response: str) -> tuple[str, str, str]:
 # ─── Phase 1 ────────────────────────────────────────────────
 
 
-def run_phase1(start_from: int = 0):
+def run_phase1(start_from: int = 0, to_chapter: int = 0):
     """Phase 1: 分批处理全部章节"""
     print("=" * 60)
     print("Phase 1: 分批提取故事概要 + 人物小传")
@@ -185,6 +185,11 @@ def run_phase1(start_from: int = 0):
 
     # 过滤出待处理的章节
     remaining = [c for c in chapters if c.number > start_from]
+    if to_chapter > 0:
+        remaining = [c for c in remaining if c.number <= to_chapter]
+    if not remaining:
+        print("[完成] 没有待处理的章节")
+        return
     print(f"待处理章节: {len(remaining)} 章 ({remaining[0].number}-{remaining[-1].number})")
 
     # 分批处理
@@ -306,6 +311,8 @@ def main():
                         help="从上次进度处继续 Phase 1")
     parser.add_argument("--from-chapter", type=int, default=0,
                         help="从指定章节后开始处理")
+    parser.add_argument("--to-chapter", type=int, default=0,
+                        help="只处理到指定章节（默认处理到末尾）")
     parser.add_argument("--book", default=None,
                         help="书名，切换到对应工作区")
     parser.add_argument("--novel-path", default=None,
@@ -324,7 +331,7 @@ def main():
         if args.from_chapter:
             start_from = args.from_chapter
 
-        run_phase1(start_from=start_from)
+        run_phase1(start_from=start_from, to_chapter=args.to_chapter)
 
     if args.phase in ("2", "all"):
         run_phase2()
