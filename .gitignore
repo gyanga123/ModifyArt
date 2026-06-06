@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment (API keys)
+backend/.env
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# OpenSquilla
+.opensquilla/
+
+# Claude Code session data
+.claude/
+
+# Logs
+*.log
+
+# Temp
+context/
