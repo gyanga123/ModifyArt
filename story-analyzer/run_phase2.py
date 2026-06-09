@@ -27,10 +27,7 @@ SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
 import config as app_config  # 避免与脚本内的 config 冲突
 
-OUTPUT_DIR = app_config.OUTPUT_DIR
-CN_OUTPUT_DIR = app_config.CN_OUTPUT_DIR
-PROMPTS_DIR = app_config.PROMPTS_DIR
-BOOK_NAME = app_config.BOOK_NAME
+# 注意：不缓存路径值，每次通过 app_config 读取，因为 set_book() 会改变它们
 
 OPENSSQUILLA = "opensquilla"
 MODEL = "deepseek-v4-pro"
@@ -41,19 +38,19 @@ def get_cfg(analysis: str) -> dict:
     """获取当前书的分析配置"""
     suffix = f"_{app_config.BOOK_NAME}" if app_config.BOOK_NAME else ""
     name = app_config.BOOK_NAME or "逆世天途"
-    CN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    app_config.CN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     configs = {
         "logic": {
-            "output_file": CN_OUTPUT_DIR / f"逻辑一致性分析{suffix}.md",
-            "raw_cache": OUTPUT_DIR / "raw_logic.json",
-            "prompt_file": PROMPTS_DIR / "phase2_logic.txt",
+            "output_file": app_config.CN_OUTPUT_DIR / f"逻辑一致性分析{suffix}.md",
+            "raw_cache": app_config.OUTPUT_DIR / "raw_logic.json",
+            "prompt_file": app_config.PROMPTS_DIR / "phase2_logic.txt",
             "title": f"《{name}》逻辑一致性分析报告",
         },
         "repetition": {
-            "output_file": CN_OUTPUT_DIR / f"重复模式分析{suffix}.md",
-            "raw_cache": OUTPUT_DIR / "raw_repetition.json",
-            "prompt_file": PROMPTS_DIR / "phase2_repetition.txt",
+            "output_file": app_config.CN_OUTPUT_DIR / f"重复模式分析{suffix}.md",
+            "raw_cache": app_config.OUTPUT_DIR / "raw_repetition.json",
+            "prompt_file": app_config.PROMPTS_DIR / "phase2_repetition.txt",
             "title": f"《{name}》重复模式分析报告",
         },
     }
@@ -85,8 +82,8 @@ def check_prerequisites() -> bool:
     """检查分析所需的依赖文件是否存在"""
     ok = True
     checks = [
-        (OUTPUT_DIR / "story_summary.md", "Phase 1 输出 story_summary.md 不存在"),
-        (OUTPUT_DIR / "character_profiles.md", "Phase 1 输出 character_profiles.md 不存在"),
+        (app_config.OUTPUT_DIR / "story_summary.md", "Phase 1 输出 story_summary.md 不存在"),
+        (app_config.OUTPUT_DIR / "character_profiles.md", "Phase 1 输出 character_profiles.md 不存在"),
     ]
     for path, msg in checks:
         if not path.exists():
@@ -164,14 +161,14 @@ def write_md(analysis: str, text: str, result: dict):
 
 """
     # 确保目录存在
-    CN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    app_config.CN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     with open(cfg["output_file"], "w", encoding="utf-8") as f:
         f.write(header)
         f.write(text)
 
     # 同时写一份到 output/ 备份（英文路径，便于程序引用）
-    backup = OUTPUT_DIR / cfg["raw_cache"].name.replace("raw_", "").replace(".json", ".md")
+    backup = app_config.OUTPUT_DIR / cfg["raw_cache"].name.replace("raw_", "").replace(".json", ".md")
     with open(backup, "w", encoding="utf-8") as f:
         f.write(header)
         f.write(text)
@@ -203,7 +200,7 @@ def run_analysis(analysis: str, force: bool = False) -> bool:
     prompt_text = read_file(cfg["prompt_file"])
 
     # 组装 message（告诉模型读取附件）
-    has_technique = (OUTPUT_DIR / "writing_technique.md").exists()
+    has_technique = (app_config.OUTPUT_DIR / "writing_technique.md").exists()
     materials = ["- story_summary.md = 全文故事概要", "- character_profiles.md = 全文角色档案"]
     if has_technique:
         materials.append("- writing_technique.md = 写作手法记录（基于原文提取的章末结尾、战斗结构、过渡方式等事实）")
@@ -214,7 +211,7 @@ def run_analysis(analysis: str, force: bool = False) -> bool:
 请读取附件中的材料：
 {attach_list}
 
-基于以上材料，对《逆世天途》全文进行分析。
+基于以上材料，对《{app_config.BOOK_NAME}》全文进行分析。
 
 {prompt_text}"""
 
@@ -222,11 +219,11 @@ def run_analysis(analysis: str, force: bool = False) -> bool:
     cmd = [
         OPENSSQUILLA, "agent",
         "--model", MODEL,
-        "--file", str(OUTPUT_DIR / "story_summary.md"),
-        "--file", str(OUTPUT_DIR / "character_profiles.md"),
+        "--file", str(app_config.OUTPUT_DIR / "story_summary.md"),
+        "--file", str(app_config.OUTPUT_DIR / "character_profiles.md"),
     ]
     if has_technique:
-        cmd += ["--file", str(OUTPUT_DIR / "writing_technique.md")]
+        cmd += ["--file", str(app_config.OUTPUT_DIR / "writing_technique.md")]
     cmd += ["--message", message, "--json", "--timeout", "300", "--unattended"]
 
     # 执行
@@ -245,7 +242,7 @@ def run_analysis(analysis: str, force: bool = False) -> bool:
 
     # 保存原始输出（先存再解析，避免编码问题丢失数据）
     raw_bytes = proc.stdout
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    app_config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     with open(cfg["raw_cache"], "wb") as f:
         f.write(raw_bytes)
 
@@ -320,8 +317,8 @@ def session_start(force_run: bool = False) -> bool:
         OPENSSQUILLA, "agent",
         "--session-id", SESSION_ID,
         "--model", MODEL,
-        "--file", str(OUTPUT_DIR / "story_summary.md"),
-        "--file", str(OUTPUT_DIR / "character_profiles.md"),
+        "--file", str(app_config.OUTPUT_DIR / "story_summary.md"),
+        "--file", str(app_config.OUTPUT_DIR / "character_profiles.md"),
         "--message", message,
         "--json",
         "--timeout", "300",

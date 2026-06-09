@@ -57,6 +57,29 @@ def save_progress(chapter: int):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
+# ─── 污染检测 ──────────────────────────────────────────────
+
+
+def check_contamination():
+    """检查 Phase 1 产出的三个文件是否存在交叉污染"""
+    checks = [
+        (config.STORY_SUMMARY_PATH, ["人物小传", "写作手法"], "story_summary 不应含人物小传或写作手法"),
+        (config.CHARACTER_PROFILES_PATH, ["故事概要", "写作手法"], "character_profiles 不应含故事概要或写作手法"),
+        (config.WRITING_TECHNIQUE_PATH, ["故事概要", "人物小传"], "writing_technique 不应含故事概要或人物小传"),
+    ]
+    all_clean = True
+    for path, keywords, msg in checks:
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        found = [kw for kw in keywords if kw in text]
+        if found:
+            print(f"  [污染] {msg}（发现: {', '.join(found)}）")
+            all_clean = False
+    if all_clean:
+        print(f"  [干净] 三文件无交叉污染")
+
+
 # ─── DeepSeek API ───────────────────────────────────────────
 
 
@@ -128,35 +151,42 @@ def split_phase1_response(response: str) -> tuple[str, str, str]:
     # 按 ## 标题切分
     sections = re.split(r"\n(?=## )", response)
 
-    # 对于每个切块，检查是否嵌入了下级标题（### 第二部分/第三部分）
-    # 这是因为模型有时会用 ### 而非 ## 写 section 标题
+    # 对于每个切块，检查是否嵌入了下级标题
+    # 模型可能输出 # / ## / ### 不同层级的第二部分/第三部分标题
+    _profile_heads = ["### 第二部分：人物小传更新", "## 第二部分：人物小传更新", "# 第二部分：人物小传更新"]
+    _technique_heads = ["### 第三部分：写作手法记录", "## 第三部分：写作手法记录", "# 第三部分：写作手法记录"]
+
+    def _split_by_any(sec, heads):
+        """按多个可能的标题格式切分"""
+        for h in heads:
+            if h in sec:
+                return re.split(r"\n(?=" + re.escape(h) + r")", sec)
+        return [sec]
+
     refined = []
     for sec in sections:
-        if "### 第二部分：人物小传更新" in sec:
-            sub = re.split(r"\n(?=### 第二部分：人物小传更新)", sec)
-            refined.extend(sub)
-        elif "### 第三部分：写作手法记录" in sec:
-            sub = re.split(r"\n(?=### 第三部分：写作手法记录)", sec)
-            refined.extend(sub)
-        else:
-            refined.append(sec)
+        result = _split_by_any(sec, _profile_heads)
+        for r in result:
+            refined.extend(_split_by_any(r, _technique_heads))
 
-    # 第二轮：如果某个块内还嵌着另一部分（如第二部分块内嵌第三部分）
+    # 第二轮：如果某个块内还嵌着另一部分
     refined2 = []
     for sec in refined:
-        if "### 第三部分：写作手法记录" in sec:
-            sub = re.split(r"\n(?=### 第三部分：写作手法记录)", sec)
-            refined2.extend(sub)
+        for h in _technique_heads:
+            if h in sec:
+                sub = re.split(r"\n(?=" + re.escape(h) + r")", sec)
+                refined2.extend(sub)
+                break
         else:
             refined2.append(sec)
 
     for sec in refined2:
         if "故事概要" in sec[:40]:
-            summary_part = sec.strip()
+            summary_part = (summary_part + "\n\n" + sec.strip()).strip()
         elif "人物小传更新" in sec[:40]:
-            profile_part = sec.strip()
+            profile_part = (profile_part + "\n\n" + sec.strip()).strip()
         elif "写作手法记录" in sec[:40]:
-            technique_part = sec.strip()
+            technique_part = (technique_part + "\n\n" + sec.strip()).strip()
 
     if not summary_part:
         print("  [警告] 未能从响应中解析出「故事概要」部分")
@@ -241,6 +271,7 @@ def run_phase1(start_from: int = 0, to_chapter: int = 0):
     print(f"  → 故事概要: {config.STORY_SUMMARY_PATH}")
     print(f"  → 人物小传: {config.CHARACTER_PROFILES_PATH}")
     print(f"  → 写作手法记录: {config.WRITING_TECHNIQUE_PATH}")
+    check_contamination()
 
 
 # ─── Phase 2 ────────────────────────────────────────────────

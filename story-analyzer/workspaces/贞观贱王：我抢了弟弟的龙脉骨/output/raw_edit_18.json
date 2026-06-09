@@ -1,0 +1,41 @@
+2026-06-08 11:32:46 [info     ] build_services.squilla_router_bundle_ready bundle_dir=C:\Users\Administrator\AppData\Roaming\uv\tools\opensquilla\Lib\site-packages\opensquilla\squilla_router\models\v4.2_phase3_inference
+2026-06-08 11:32:46 [info     ] build_services.agent_workspace_ready agent_id=main bootstrap_completed=False bootstrap_seeded=True created_files=[] workspace=C:\Users\Administrator\.opensquilla\workspace
+2026-06-08 11:32:46 [info     ] build_services.sandbox_ready   backend=auto default_level=L1-standard grading_enabled=False insecure_mode=True notes=['insecure_mode', 'legacy_flag_missing'] sandbox_enabled=False
+2026-06-08 11:32:46 [info     ] build_services.provider_ready  model=deepseek-v4-flash provider=deepseek
+2026-06-08 11:32:46 [info     ] session_search_tool.registered
+2026-06-08 11:32:46 [info     ] build_services.session_search_tool_registered
+2026-06-08 11:32:46 [info     ] build_services.embedding_provider model=BAAI/bge-small-zh-v1.5 provider=local reason=None requested=auto
+2026-06-08 11:32:47 [info     ] sqlite_vec_loaded
+2026-06-08 11:32:47 [info     ] sync_manager.started
+2026-06-08 11:32:47 [info     ] build_services.memory_agent_ready agent_id=main db=C:\Users\Administrator\.opensquilla\state\agents\main\memory.db
+2026-06-08 11:32:47 [info     ] memory_tools_registered        tools=['memory_search', 'memory_save', 'memory_get', 'memory_delete']
+2026-06-08 11:32:47 [info     ] build_services.memory_tools_registered agents=['main']
+2026-06-08 11:32:47 [info     ] build_services.skill_loader_initialized bundled_dir=C:\Users\Administrator\AppData\Roaming\uv\tools\opensquilla\Lib\site-packages\opensquilla\skills\bundled
+2026-06-08 11:32:47 [info     ] skill_tools.registered
+2026-06-08 11:32:47 [info     ] build_services.skill_tools_registered
+2026-06-08 11:32:47 [info     ] build_services.cron_scheduler_started
+2026-06-08 11:32:48 [info     ] build_services.search_provider_initialized provider=duckduckgo
+2026-06-08 11:32:48 [info     ] build_services.session_flush_service_disabled
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=sessions_send
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=sessions_spawn
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=sessions_yield
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=agents_list
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=image_generate
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=message
+2026-06-08 11:32:48 [debug    ] tool_policy.policy_pre         allowed_tool_count=69 denied_count=7 profile=owner_full
+2026-06-08 11:32:48 [info     ] tool_context_created           caller_kind=cli denied_count=7
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=sessions_send
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=sessions_spawn
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=sessions_yield
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=agents_list
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=image_generate
+2026-06-08 11:32:48 [debug    ] tool_filtered                  reason=denied tool=message
+2026-06-08 11:32:48 [debug    ] tool_policy.profile_post       allowed_tool_count=69 denied_count=7 profile=owner_full
+2026-06-08 11:32:48 [debug    ] resolve_model.applied          model=deepseek-v4-flash
+2026-06-08 11:32:53 [warning  ] pipeline.step_failed           error='squilla router timed out after 5s' step=apply_squilla_router
+2026-06-08 11:32:53 [debug    ] skills_filter.applied          filtered=46 filtered_skills=['advanced-dubbing-studio', 'ai-video-script', 'cron', 'deep-research', 'docx', 'git-diff', 'github', 'history-explorer', 'html-to-pdf', 'http-fetch', 'memory', 'meta-competitive-intel', 'meta-daily-operator-brief', 'meta-document-to-decision', 'meta-job-search-pipeline', 'meta-kid-project-planner', 'meta-short-drama', 'meta-skill-creator', 'meta-web-research-to-report', 'multi-search-engine', 'music-and-singing-studio', 'nano-banana-pro', 'paper-abstract-author', 'paper-citation-planner', 'paper-experiment-stub', 'paper-outline-author', 'paper-plot-stub', 'paper-preference-planner', 'paper-refbib-stub', 'paper-revision-author', 'paper-section-author', 'paper-source-curator', 'pdf-toolkit', 'pptx', 'seedance-2-prompt', 'skill-creator', 'srt-from-script', 'sub-agent', 'summarize', 'text-file-read', 'title-card-image', 'voice-clone-lab', 'voice-conversion-studio', 'voiceover-studio', 'weather', 'xlsx'] gated=46 mode=system pinned=0 pinned_skills=[] query_preview='[2026-06-08T11:32+08:00 Mon Asia/Shanghai]\n继续改文第18章。注意V1-14：...' strategy=off total=61
+2026-06-08 11:32:53 [debug    ] prompt_cache.applying
+2026-06-08 11:32:53 [debug    ] turn_runner.model_resolved     explicit_model=None pipeline_model=deepseek-v4-flash resolved=deepseek-v4-flash selector_model=deepseek-v4-flash squilla_router_tier=None
+2026-06-08 11:32:53 [info     ] sync_manager.sync              force=False reason=session-start
+2026-06-08 11:32:54 [info     ] provider.request_proof         compact_needed=False compaction_not_smaller=False effective_proof_budget=2143840 estimated_chars=67700 estimated_tokens=16925 execution_status_version=1 fallback_reason=None fits=True messages_chars=25357 projection_adapter=deepseek proof_budget=2160224 proof_headroom_chars=16384 provider_window_mismatch=False raw_proof_budget=2160224 recent_tail_too_large=False retry_count=0 status_projection_mode=content_envelope system_chars=10915 tool_schema_too_large=False tools_chars=42188 top_contributors=[{'path': '$.messages[1].content', 'chars': 11153}, {'path': '$.messages[0].content', 'chars': 10641}, {'path': '$.messages[2].content', 'chars': 2289}, {'path': '$.tools[6].function.description', 'chars': 911}, {'path': '$.tools[41].function.description', 'chars': 869}] top_level_chars=134
+2026-06-08 11:32:57 [info     ] provider.request_proof         compact_needed=False compaction_not_smaller=False effective_proof_budget=2143840 estimated_chars=68500 estimated_tokens=17125 execution_status_version=1 fallback_reason=native_is_error_unavailable fits=True messages_chars=26157 projection_adapter=deepseek proof_budget=2160224 proof_headroom_chars=16384 provider_window_mismatch=False raw_proof_budget=2160224 recent_tail_too_large=False retry_count=0 status_projection_mode=content_envelope system_chars=10915 tool_schema_too_large=False tools_chars=42188 top_contributors=[{'path': '$.messages[1].content', 'chars': 11153}, {'path': '$.messages[0].content', 'chars': 10641}, {'path': '$.messages[2].content', 'chars': 2289}, {'path': '$.tools[6].function.description', 'chars': 911}, {'path': '$.tools[41].function.description', 'chars': 869}] top_level_chars=134
